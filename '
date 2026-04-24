@@ -127,33 +127,20 @@ impl Cube {
         }
     }
 
-    pub fn r#move(&mut self, r#move: Move) -> &mut Self {
-        let dir = match r#move {
-            Move::U(d) => d,
-            Move::D(d) => d,
-            Move::F(d) => d,
-            Move::B(d) => d,
-            Move::L(d) => d,
-            Move::R(d) => d,
-            Move::M(d) => d,
-            Move::E(d) => d,
-            Move::S(d) => d,
-        };
-
-        for _ in 0..dir.turns() {
-            match r#move {
-                Move::U(_) => self.rotate_u_cw(),
-                Move::D(_) => self.rotate_d_cw(),
-                Move::F(_) => self.rotate_f_cw(),
-                Move::B(_) => self.rotate_b_cw(),
-                Move::L(_) => self.rotate_l_cw(),
-                Move::R(_) => self.rotate_r_cw(),
-                Move::M(_) => self.slice_m_cw(),
-                Move::E(_) => self.slice_e_cw(),
-                Move::S(_) => self.slice_s_cw(),
+    pub fn move(&mut self, movement: Move) -> &mut Self {
+        for _ in 0..direction.turns() {
+            match movement {
+                Move::U => self.rotate_u_cw(),
+                Move::D => self.rotate_d_cw(),
+                Move::F => self.rotate_f_cw(),
+                Move::B => self.rotate_b_cw(),
+                Move::L => self.rotate_l_cw(),
+                Move::R => self.rotate_r_cw(),
+                Move::M => self.slice_m_cw(),
+                Move::E => self.slice_e_cw(),
+                Move::S => self.slice_s_cw(),
             }
         }
-
         self
     }
 
@@ -182,22 +169,22 @@ impl Cube {
         let mut rng = seed.max(1);
 
         for _ in 0..n {
+            let face = match xorshiftstar(&mut rng) % 6 {
+                0 => Move::U,
+                1 => Move::D,
+                2 => Move::F,
+                3 => Move::B,
+                4 => Move::L,
+                _ => Move::R,
+            };
+
             let direction = match xorshiftstar(&mut rng) % 3 {
                 0 => Direction::Clockwise,
                 1 => Direction::Prime,
                 _ => Direction::Double,
             };
 
-            let face = match xorshiftstar(&mut rng) % 6 {
-                0 => Move::U(direction),
-                1 => Move::D(direction),
-                2 => Move::F(direction),
-                3 => Move::B(direction),
-                4 => Move::L(direction),
-                _ => Move::R(direction),
-            };
-
-            self.r#move(face);
+            self.apply_move(face, direction);
         }
 
         self
@@ -345,7 +332,7 @@ fn xorshiftstar(state: &mut u64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Color, Cube, Direction, create_face, rotate_face_matrix_cw};
 
     #[test]
     fn create_face_fills_all_positions() {
@@ -396,7 +383,7 @@ mod tests {
     #[test]
     fn single_move_makes_cube_unsolved() {
         let mut cube = Cube::new_solved();
-        cube.r#move(Move::U(Direction::Clockwise));
+        cube.u(Direction::Clockwise);
         assert!(!cube.is_solved());
     }
 
@@ -405,9 +392,8 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube
-            .r#move(Move::F(Direction::Clockwise))
-            .r#move(Move::F(Direction::Prime));
+        cube.f(Direction::Clockwise)
+            .f(Direction::Prime);
 
         assert_eq!(cube, original);
     }
@@ -417,30 +403,28 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube
-            .r#move(Move::R(Direction::Double))
-            .r#move(Move::R(Direction::Double));
+        cube.r(Direction::Double).r(Direction::Double);
 
         assert_eq!(cube, original);
     }
 
     #[test]
     fn four_clockwise_turns_restore_each_face_move() {
-        for r#move in [
-            Move::U(Direction::Clockwise),
-            Move::D(Direction::Clockwise),
-            Move::F(Direction::Clockwise),
-            Move::B(Direction::Clockwise),
-            Move::L(Direction::Clockwise),
-            Move::R(Direction::Clockwise),
+        for apply in [
+            Cube::u,
+            Cube::d,
+            Cube::f,
+            Cube::b,
+            Cube::l,
+            Cube::r,
         ] {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
 
             assert_eq!(cube, original);
         }
@@ -452,13 +436,13 @@ mod tests {
         let mut separate = Cube::new_solved();
 
         chained
-            .r#move(Move::U(Direction::Clockwise))
-            .r#move(Move::R(Direction::Prime))
-            .r#move(Move::F(Direction::Double));
+            .u(Direction::Clockwise)
+            .r(Direction::Prime)
+            .f(Direction::Double);
 
-        separate.r#move(Move::U(Direction::Clockwise));
-        separate.r#move(Move::R(Direction::Prime));
-        separate.r#move(Move::F(Direction::Double));
+        separate.u(Direction::Clockwise);
+        separate.r(Direction::Prime);
+        separate.f(Direction::Double);
 
         assert_eq!(chained, separate);
     }
@@ -482,18 +466,18 @@ mod tests {
 
     #[test]
     fn four_slices_restores_faces() {
-        for r#move in [
-            Move::M(Direction::Clockwise),
-            Move::E(Direction::Clockwise),
-            Move::S(Direction::Clockwise),
+        for apply in [
+            Cube::m,
+            Cube::e,
+            Cube::s,
         ] {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
 
             assert_eq!(cube, original);
         }
