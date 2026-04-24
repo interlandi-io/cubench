@@ -10,11 +10,12 @@
     },
     "files": ["dist", "pkg"],
     "scripts": {
+        "build": "bun run build:ts && bun run build:rust:bundler && bun run build:rust:bundler",
         "build:bundler": "bun run build:ts && bun run build:rust:bundler",
         "build:node": "bun run build:ts && bun run build:rust:node",
         "build:ts": "tsc",
-        "build:rust:bundler": "cd crates/cube && wasm-pack build --target bundler --out-dir ../../pkg",
-        "build:rust:node": "cd crates/cube && wasm-pack build --target bundler --out-dir ../../pkg"
+        "build:rust:bundler": "cd crates/cube && wasm-pack build --target bundler --out-dir ../../pkg/bundler",
+        "build:rust:node": "cd crates/cube && wasm-pack build --target node --out-dir ../../pkg/node"
     },
     "devDependencies": {
         "@types/bun": "latest",
