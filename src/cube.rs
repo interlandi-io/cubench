@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{fmt::{Display, Formatter}, time::{SystemTime, UNIX_EPOCH}};
 
 const KNUTH: u64 = 0x9E37_79B9_7F4A_7C15;
 
@@ -114,6 +114,8 @@ pub enum Move {
 }
 
 impl Cube {
+    pub const FACELET_DISPLAY_ORDER: &'static str = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
+
     pub fn new_solved() -> Self {
         Self {
             state: CubeState {
@@ -329,6 +331,82 @@ impl Cube {
     }
 }
 
+
+impl Display for Cube {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let faces = [
+            &self.state.u,
+            &self.state.r,
+            &self.state.f,
+            &self.state.d,
+            &self.state.l,
+            &self.state.b,
+        ];
+        for face in faces {
+            for row in face {
+                for color in row {
+                    f.write_str(&color.to_string())?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Color::W => "W",
+            Color::Y => "Y",
+            Color::G => "G",
+            Color::B => "B",
+            Color::O => "O",
+            Color::R => "R",
+        };
+        f.write_str(s)?;
+        
+        Ok(())
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Move::U(Direction::Clockwise) => "U",
+            Move::U(Direction::Prime) => "U'",
+            Move::U(Direction::Double) => "U2",
+            Move::D(Direction::Clockwise) => "D",
+            Move::D(Direction::Prime) => "D'",
+            Move::D(Direction::Double) => "D2",
+            Move::F(Direction::Clockwise) => "F",
+            Move::F(Direction::Prime) => "F'",
+            Move::F(Direction::Double) => "F2",
+            Move::B(Direction::Clockwise) => "B",
+            Move::B(Direction::Prime) => "B'",
+            Move::B(Direction::Double) => "B2",
+            Move::L(Direction::Clockwise) => "L",
+            Move::L(Direction::Prime) => "L'",
+            Move::L(Direction::Double) => "L2",
+            Move::R(Direction::Clockwise) => "R",
+            Move::R(Direction::Prime) => "R'",
+            Move::R(Direction::Double) => "R2",
+            Move::M(Direction::Clockwise) => "M",
+            Move::M(Direction::Prime) => "M'",
+            Move::M(Direction::Double) => "M2",
+            Move::E(Direction::Clockwise) => "E",
+            Move::E(Direction::Prime) => "E'",
+            Move::E(Direction::Double) => "E2",
+            Move::S(Direction::Clockwise) => "S",
+            Move::S(Direction::Prime) => "S'",
+            Move::S(Direction::Double) => "S2",
+        };
+        f.write_str(s)?;
+        
+        Ok(())
+    }
+}
+
 fn face_is_uniform(face: &Face) -> bool {
     let anchor = face[0][0];
     face.iter().flatten().all(|&color| color == anchor)
@@ -497,6 +575,19 @@ mod tests {
 
             assert_eq!(cube, original);
         }
+    }
+
+    #[test]
+    fn to_string_works() {
+        let cube = Cube::new_solved();
+        let should = Cube::FACELET_DISPLAY_ORDER
+            .replace("U", "W")
+            .replace("R", "R")
+            .replace("F", "G")
+            .replace("D", "Y")
+            .replace("L", "O")
+            .replace("B", "B");
+        assert_eq!(cube.to_string(), should);
     }
 
     fn color_counts(cube: &Cube) -> [usize; 6] {
