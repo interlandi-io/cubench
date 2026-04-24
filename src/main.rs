@@ -5,12 +5,17 @@ use std::io;
 
 fn main() -> Result<(), Error> {
     let mut cube = Cube::new_solved();
-    cube.scramble(128);
     let mut solution_buf = String::new();
+    let scramble = cube.scramble(25)
+        .iter()
+        .map(|m| m.to_string())
+        .collect::<Vec<String>>() // TODO: need 
+        .join(" ");
 
-    println!("{}", cube.to_string());
+    println!("State: {}", cube.to_string());
+    println!("Scramble: {scramble}");
 
-    println!("Enter solution");
+    println!("Enter solution:");
     io::stdin().read_line(&mut solution_buf)?;
 
     let solution_moves = parse(&solution_buf)?;

@@ -173,7 +173,7 @@ impl Cube {
         .all(|face| face_is_uniform(face))
     }
 
-    pub fn scramble(&mut self, n: usize) -> &mut Self {
+    pub fn scramble(&mut self, n: usize) -> Vec<Move> {
         let seed = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|duration| duration.as_nanos() as u64)
@@ -181,7 +181,8 @@ impl Cube {
         self.scramble_with_seed(n, seed)
     }
 
-    pub fn scramble_with_seed(&mut self, n: usize, seed: u64) -> &mut Self {
+    pub fn scramble_with_seed(&mut self, n: usize, seed: u64) -> Vec<Move> {
+        let mut moves = Vec::new();
         let mut rng = seed.max(1);
 
         for _ in 0..n {
@@ -191,7 +192,7 @@ impl Cube {
                 _ => Direction::Double,
             };
 
-            let face = match xorshiftstar(&mut rng) % 6 {
+            let r#move = match xorshiftstar(&mut rng) % 6 {
                 0 => Move::U(direction),
                 1 => Move::D(direction),
                 2 => Move::F(direction),
@@ -200,10 +201,11 @@ impl Cube {
                 _ => Move::R(direction),
             };
 
-            self.r#move(face);
+            moves.push(r#move);
+            self.r#move(r#move);
         }
 
-        self
+        moves
     }
 
     // Each rotation can be represented as a clockwise matrix rotation about (1, 1),
