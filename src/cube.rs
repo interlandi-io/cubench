@@ -130,7 +130,7 @@ impl Cube {
         }
     }
 
-    pub fn r#move(&mut self, r#move: Move) -> &mut Self {
+    pub fn r#move(&mut self, r#move: &Move) {
         let dir = match r#move {
             Move::U(d) => d,
             Move::D(d) => d,
@@ -156,8 +156,12 @@ impl Cube {
                 Move::S(_) => self.slice_s_cw(),
             }
         }
+    }
 
-        self
+    pub fn move_batch(&mut self, moves: &[Move]) {
+        for r#move in moves {
+            self.r#move(r#move);
+        }
     }
 
     pub fn is_solved(&self) -> bool {
@@ -202,7 +206,7 @@ impl Cube {
             };
 
             moves.push(r#move);
-            self.r#move(r#move);
+            self.r#move(&r#move);
         }
 
         moves
@@ -515,7 +519,7 @@ mod tests {
     #[test]
     fn single_move_makes_cube_unsolved() {
         let mut cube = Cube::new_solved();
-        cube.r#move(Move::U(Direction::Clockwise));
+        cube.r#move(&Move::U(Direction::Clockwise));
         assert!(!cube.is_solved());
     }
 
@@ -524,9 +528,10 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube
-            .r#move(Move::F(Direction::Clockwise))
-            .r#move(Move::F(Direction::Prime));
+        cube.move_batch(&[
+            Move::F(Direction::Clockwise),
+            Move::F(Direction::Prime)
+        ]);
 
         assert_eq!(cube, original);
     }
@@ -536,9 +541,10 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube
-            .r#move(Move::R(Direction::Double))
-            .r#move(Move::R(Direction::Double));
+        cube.move_batch(&[
+            Move::R(Direction::Double),
+            Move::R(Direction::Double)
+        ]);
 
         assert_eq!(cube, original);
     }
@@ -556,30 +562,33 @@ mod tests {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
+            cube.move_batch(&[
+                r#move,
+                r#move,
+                r#move,
+                r#move,
+            ]);
 
             assert_eq!(cube, original);
         }
     }
 
     #[test]
-    fn chainable_rotation_methods_match_separate_calls() {
-        let mut chained = Cube::new_solved();
+    fn batch_moves_match_separate_calls() {
+        let mut batch = Cube::new_solved();
         let mut separate = Cube::new_solved();
 
-        chained
-            .r#move(Move::U(Direction::Clockwise))
-            .r#move(Move::R(Direction::Prime))
-            .r#move(Move::F(Direction::Double));
+        batch.move_batch(&[
+            Move::U(Direction::Clockwise),
+            Move::R(Direction::Prime),
+            Move::F(Direction::Double),
+        ]);
 
-        separate.r#move(Move::U(Direction::Clockwise));
-        separate.r#move(Move::R(Direction::Prime));
-        separate.r#move(Move::F(Direction::Double));
+        separate.r#move(&Move::U(Direction::Clockwise));
+        separate.r#move(&Move::R(Direction::Prime));
+        separate.r#move(&Move::F(Direction::Double));
 
-        assert_eq!(chained, separate);
+        assert_eq!(batch, separate);
     }
 
     #[test]
@@ -609,10 +618,12 @@ mod tests {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
-            cube.r#move(r#move);
+            cube.move_batch(&[
+                r#move,
+                r#move,
+                r#move,
+                r#move,
+            ]);
 
             assert_eq!(cube, original);
         }

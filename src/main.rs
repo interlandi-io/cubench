@@ -20,9 +20,7 @@ fn main() -> Result<(), Error> {
 
     let solution_moves = parse(&solution_buf)?;
 
-    for r#move in solution_moves {
-        cube.r#move(r#move);
-    }
+    cube.move_batch(&solution_moves);
 
     println!("Cube state: {cube}");
     println!("Solved: {}", cube.is_solved());
