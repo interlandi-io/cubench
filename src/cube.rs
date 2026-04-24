@@ -2,6 +2,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 const KNUTH: u64 = 0x9E37_79B9_7F4A_7C15;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Cube {
+    pub state: CubeState,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Color {
     W,
@@ -52,50 +57,6 @@ pub struct CubeState {
     pub b: Face,
     pub l: Face,
     pub r: Face,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Cube {
-    pub state: CubeState,
-}
-
-pub fn create_face(color: Color) -> Face {
-    [[color; 3]; 3]
-}
-
-pub fn rotate_face_matrix_cw(face: Face) -> Face {
-    let mut rotated = face;
-
-    for (i_row, row) in face.iter().enumerate() {
-        for (i_col, color) in row.iter().enumerate() {
-            // TODO :Remember to change this once this becomes nxn agnostic
-            rotated[i_col][2 - i_row] = *color; 
-        }
-    }
-
-    rotated
-}
-
-fn get_row(face: &Face, row: usize) -> [Color; 3] {
-    face[row]
-}
-
-fn set_row(face: &mut Face, row: usize, values: [Color; 3]) {
-    face[row] = values;
-}
-
-fn get_col(face: &Face, col: usize) -> [Color; 3] {
-    [face[0][col], face[1][col], face[2][col]]
-}
-
-fn set_col(face: &mut Face, col: usize, values: [Color; 3]) {
-    for row in 0..3 {
-        face[row][col] = values[row];
-    }
-}
-
-fn reverse_vec3_color(values: [Color; 3]) -> [Color; 3] {
-    [values[2], values[1], values[0]]
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -355,6 +316,46 @@ impl Cube {
         set_row(&mut self.state.u, 2, reverse_vec3_color(left));
     }
 }
+
+pub fn create_face(color: Color) -> Face {
+    [[color; 3]; 3]
+}
+
+pub fn rotate_face_matrix_cw(face: Face) -> Face {
+    let mut rotated = face;
+
+    for (i_row, row) in face.iter().enumerate() {
+        for (i_col, color) in row.iter().enumerate() {
+            // TODO :Remember to change this once this becomes nxn agnostic
+            rotated[i_col][2 - i_row] = *color; 
+        }
+    }
+
+    rotated
+}
+
+fn get_row(face: &Face, row: usize) -> [Color; 3] {
+    face[row]
+}
+
+fn set_row(face: &mut Face, row: usize, values: [Color; 3]) {
+    face[row] = values;
+}
+
+fn get_col(face: &Face, col: usize) -> [Color; 3] {
+    [face[0][col], face[1][col], face[2][col]]
+}
+
+fn set_col(face: &mut Face, col: usize, values: [Color; 3]) {
+    for row in 0..3 {
+        face[row][col] = values[row];
+    }
+}
+
+fn reverse_vec3_color(values: [Color; 3]) -> [Color; 3] {
+    [values[2], values[1], values[0]]
+}
+
 
 fn face_is_uniform(face: &Face) -> bool {
     let anchor = face[0][0];
