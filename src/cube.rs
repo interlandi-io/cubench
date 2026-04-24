@@ -1,4 +1,4 @@
-use std::{fmt::{Display, Formatter}, time::{SystemTime, UNIX_EPOCH}};
+use std::{fmt::{Display, Formatter}};
 use anyhow::{anyhow, Error};
 
 const KNUTH: u64 = 0x9E37_79B9_7F4A_7C15;
@@ -177,17 +177,9 @@ impl Cube {
         .all(|face| face_is_uniform(face))
     }
 
-    pub fn scramble(&mut self, n: usize) -> Vec<Move> {
-        let seed = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|duration| duration.as_nanos() as u64)
-            .unwrap_or(KNUTH);
-        self.scramble_with_seed(n, seed)
-    }
-
-    pub fn scramble_with_seed(&mut self, n: usize, seed: u64) -> Vec<Move> {
+    pub fn scramble(&mut self, n: usize, seed: Option<u64>) -> Vec<Move> {
         let mut moves = Vec::new();
-        let mut rng = seed.max(1);
+        let mut rng = seed.unwrap_or(KNUTH).max(1);
 
         for _ in 0..n {
             let direction = match xorshiftstar(&mut rng) % 3 {
@@ -594,7 +586,7 @@ mod tests {
     #[test]
     fn scramble_zero_keeps_cube_solved() {
         let mut cube = Cube::new_solved();
-        cube.scramble_with_seed(0, 1234);
+        cube.scramble(0, None);
         assert!(cube.is_solved());
     }
 
@@ -603,7 +595,7 @@ mod tests {
         let mut cube = Cube::new_solved();
         let before = color_counts(&cube);
 
-        cube.scramble_with_seed(64, 1234);
+        cube.scramble(64, None);
 
         assert_eq!(before, color_counts(&cube));
     }

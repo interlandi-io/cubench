@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 use crate::{cube::Cube, parser::parse};
 
+
 #[wasm_bindgen]
 pub struct CubeShim(Cube);
 
@@ -8,6 +9,7 @@ pub struct CubeShim(Cube);
 impl CubeShim {
     #[wasm_bindgen(constructor)]
     pub fn new_solved() -> Self {
+        console_error_panic_hook::set_once();
         CubeShim(Cube::new_solved())
     }
     
@@ -27,7 +29,7 @@ impl CubeShim {
         self.0.is_solved()
     }
 
-    pub fn scramble(&mut self) {
-        self.0.scramble(25);
+    pub fn scramble(&mut self, seed: Option<u64>) {
+        self.0.scramble(25, seed);
     }
 }
