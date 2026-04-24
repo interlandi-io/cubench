@@ -12,9 +12,8 @@ pub enum Color {
     R,
 }
 
-#[cfg(test)]
 impl Color {
-    fn index(self) -> usize {
+    pub fn index(self) -> usize {
         match self {
             Self::W => 0,
             Self::Y => 1,
@@ -95,18 +94,23 @@ fn set_col(face: &mut Face, col: usize, values: [Color; 3]) {
     }
 }
 
-fn reverse_row(values: [Color; 3]) -> [Color; 3] {
+fn reverse_vec3_color(values: [Color; 3]) -> [Color; 3] {
     [values[2], values[1], values[0]]
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Move {
+pub enum Move {
+    // Rotations
     U,
     D,
     F,
     B,
     L,
     R,
+    // Slices
+    M,
+    E,
+    S,
 }
 
 impl Cube {
@@ -145,6 +149,18 @@ impl Cube {
 
     pub fn r(&mut self, direction: Direction) -> &mut Self {
         self.apply_move(Move::R, direction)
+    }
+
+    pub fn m(&mut self, direction: Direction) -> &mut Self {
+        self.apply_move(Move::M, direction)
+    }
+
+    pub fn e(&mut self, direction: Direction) -> &mut Self {
+        self.apply_move(Move::E, direction)
+    }
+
+    pub fn s(&mut self, direction: Direction) -> &mut Self {
+        self.apply_move(Move::S, direction)
     }
 
     pub fn is_solved(&self) -> bool {
@@ -208,6 +224,9 @@ impl Cube {
             Move::B => self.rotate_b_cw(),
             Move::L => self.rotate_l_cw(),
             Move::R => self.rotate_r_cw(),
+            Move::M => self.slice_m_cw(),
+            Move::E => self.slice_e_cw(),
+            Move::S => self.slice_s_cw(),
         }
     }
 
@@ -253,9 +272,9 @@ impl Cube {
         let right = get_col(&self.state.r, 0);
 
         set_col(&mut self.state.r, 0, up);
-        set_row(&mut self.state.d, 0, reverse_row(right));
+        set_row(&mut self.state.d, 0, reverse_vec3_color(right));
         set_col(&mut self.state.l, 2, down);
-        set_row(&mut self.state.u, 2, reverse_row(left));
+        set_row(&mut self.state.u, 2, reverse_vec3_color(left));
     }
 
     fn rotate_b_cw(&mut self) {
@@ -267,9 +286,9 @@ impl Cube {
         let left = get_col(&self.state.l, 0);
 
         set_col(&mut self.state.r, 2, down);
-        set_row(&mut self.state.d, 2, reverse_row(left));
+        set_row(&mut self.state.d, 2, reverse_vec3_color(left));
         set_col(&mut self.state.l, 0, up);
-        set_row(&mut self.state.u, 0, reverse_row(right));
+        set_row(&mut self.state.u, 0, reverse_vec3_color(right));
     }
 
     fn rotate_l_cw(&mut self) {
@@ -282,8 +301,8 @@ impl Cube {
 
         set_col(&mut self.state.f, 0, up);
         set_col(&mut self.state.d, 0, front);
-        set_col(&mut self.state.b, 2, reverse_row(down));
-        set_col(&mut self.state.u, 0, reverse_row(back));
+        set_col(&mut self.state.b, 2, reverse_vec3_color(down));
+        set_col(&mut self.state.u, 0, reverse_vec3_color(back));
     }
 
     fn rotate_r_cw(&mut self) {
@@ -296,8 +315,44 @@ impl Cube {
 
         set_col(&mut self.state.f, 2, up);
         set_col(&mut self.state.d, 2, front);
-        set_col(&mut self.state.b, 0, reverse_row(down));
-        set_col(&mut self.state.u, 2, reverse_row(back));
+        set_col(&mut self.state.b, 0, reverse_vec3_color(down));
+        set_col(&mut self.state.u, 2, reverse_vec3_color(back));
+    }
+
+    fn slice_m_cw(&mut self) {
+        let up = get_col(&self.state.u, 1);
+        let front = get_col(&self.state.f, 1);
+        let down = get_col(&self.state.d, 1);
+        let back = get_col(&self.state.b, 1);
+
+        set_col(&mut self.state.b, 1, reverse_vec3_color(up));
+        set_col(&mut self.state.d, 1, reverse_vec3_color(back));
+        set_col(&mut self.state.f, 1, down);
+        set_col(&mut self.state.u, 1, front);
+    }
+
+    fn slice_e_cw(&mut self) {
+        let front = get_row(&self.state.f, 1);
+        let right = get_row(&self.state.r, 1);
+        let back = get_row(&self.state.b, 1);
+        let left = get_row(&self.state.l, 1);
+
+        set_row(&mut self.state.l, 1, back);
+        set_row(&mut self.state.b, 1, right);
+        set_row(&mut self.state.r, 1, front);
+        set_row(&mut self.state.f, 1, left);
+    }
+
+    fn slice_s_cw(&mut self) {
+        let up = get_row(&self.state.u, 2);
+        let right = get_col(&self.state.r, 1);
+        let down = get_row(&self.state.d, 0);
+        let left = get_col(&self.state.l, 1);
+
+        set_col(&mut self.state.r, 1, up);
+        set_row(&mut self.state.d, 0, reverse_vec3_color(right));
+        set_col(&mut self.state.l, 1, down);
+        set_row(&mut self.state.u, 2, reverse_vec3_color(left));
     }
 }
 
@@ -396,12 +451,12 @@ mod tests {
     #[test]
     fn four_clockwise_turns_restore_each_face_move() {
         for apply in [
-            Cube::u as fn(&mut Cube, Direction) -> &mut Cube,
-            Cube::d as fn(&mut Cube, Direction) -> &mut Cube,
-            Cube::f as fn(&mut Cube, Direction) -> &mut Cube,
-            Cube::b as fn(&mut Cube, Direction) -> &mut Cube,
-            Cube::l as fn(&mut Cube, Direction) -> &mut Cube,
-            Cube::r as fn(&mut Cube, Direction) -> &mut Cube,
+            Cube::u,
+            Cube::d,
+            Cube::f,
+            Cube::b,
+            Cube::l,
+            Cube::r,
         ] {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
@@ -447,6 +502,25 @@ mod tests {
         cube.scramble_with_seed(64, 1234);
 
         assert_eq!(before, color_counts(&cube));
+    }
+
+    #[test]
+    fn four_slices_restores_faces() {
+        for apply in [
+            Cube::m,
+            Cube::e,
+            Cube::s,
+        ] {
+            let mut cube = Cube::new_solved();
+            let original = cube.clone();
+
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+            apply(&mut cube, Direction::Clockwise);
+
+            assert_eq!(cube, original);
+        }
     }
 
     fn color_counts(cube: &Cube) -> [usize; 6] {
