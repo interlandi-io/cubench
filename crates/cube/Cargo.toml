@@ -9,12 +9,10 @@ crate-type=["cdylib", "rlib"]
 [dependencies]
 anyhow = "1.0.102"
 console_error_panic_hook = "0.1.7"
+image = "0.25.10"
 kiss3d = "0.41.0"
 wasm-bindgen = "0.2.118"
 
 [[example]]
 name = "renderer"
 path = "examples/renderer.rs"
-
-[dev-dependencies]
-winit = "0.30.13"
