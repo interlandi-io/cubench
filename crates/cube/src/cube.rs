@@ -1,5 +1,5 @@
-use std::{fmt::{Display, Formatter}};
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
+use std::fmt::{Display, Formatter};
 
 const KNUTH: u64 = 0x9E37_79B9_7F4A_7C15;
 
@@ -70,7 +70,7 @@ pub fn rotate_face_matrix_cw(face: Face) -> Face {
     for (i_row, row) in face.iter().enumerate() {
         for (i_col, color) in row.iter().enumerate() {
             // TODO :Remember to change this once this becomes nxn agnostic
-            rotated[i_col][2 - i_row] = *color; 
+            rotated[i_col][2 - i_row] = *color;
         }
     }
 
@@ -115,7 +115,8 @@ pub enum Move {
 }
 
 impl Cube {
-    pub const FACELET_DISPLAY_ORDER: &'static str = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
+    pub const FACELET_DISPLAY_ORDER: &'static str =
+        "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
 
     pub fn new_solved() -> Self {
         Self {
@@ -330,7 +331,6 @@ impl Cube {
     }
 }
 
-
 impl Display for Cube {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let faces = [
@@ -364,7 +364,7 @@ impl Display for Color {
             Color::R => "R",
         };
         f.write_str(s)?;
-        
+
         Ok(())
     }
 }
@@ -401,16 +401,16 @@ impl Display for Move {
             Move::S(Direction::Double) => "S2",
         };
         f.write_str(s)?;
-        
+
         Ok(())
     }
 }
 
 impl TryFrom<&str> for Move {
     type Error = Error;
-    
+
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-       match value.to_lowercase().as_str() {
+        match value.to_lowercase().as_str() {
             "u" => Ok(Move::U(Direction::Clockwise)),
             "u'" => Ok(Move::U(Direction::Prime)),
             "u2" => Ok(Move::U(Direction::Double)),
@@ -439,8 +439,8 @@ impl TryFrom<&str> for Move {
             "s'" => Ok(Move::S(Direction::Prime)),
             "s2" => Ok(Move::S(Direction::Double)),
             "x" | "y" | "z" => Err(anyhow!("attempted to rotate cube (unsupported)")),
-            other => Err(anyhow!("not a valid WCA move: {other}"))
-       }
+            other => Err(anyhow!("not a valid WCA move: {other}")),
+        }
     }
 }
 
@@ -520,10 +520,7 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube.move_batch(&[
-            Move::F(Direction::Clockwise),
-            Move::F(Direction::Prime)
-        ]);
+        cube.move_batch(&[Move::F(Direction::Clockwise), Move::F(Direction::Prime)]);
 
         assert_eq!(cube, original);
     }
@@ -533,10 +530,7 @@ mod tests {
         let mut cube = Cube::new_solved();
         let original = cube.clone();
 
-        cube.move_batch(&[
-            Move::R(Direction::Double),
-            Move::R(Direction::Double)
-        ]);
+        cube.move_batch(&[Move::R(Direction::Double), Move::R(Direction::Double)]);
 
         assert_eq!(cube, original);
     }
@@ -554,12 +548,7 @@ mod tests {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.move_batch(&[
-                r#move,
-                r#move,
-                r#move,
-                r#move,
-            ]);
+            cube.move_batch(&[r#move, r#move, r#move, r#move]);
 
             assert_eq!(cube, original);
         }
@@ -610,12 +599,7 @@ mod tests {
             let mut cube = Cube::new_solved();
             let original = cube.clone();
 
-            cube.move_batch(&[
-                r#move,
-                r#move,
-                r#move,
-                r#move,
-            ]);
+            cube.move_batch(&[r#move, r#move, r#move, r#move]);
 
             assert_eq!(cube, original);
         }

@@ -1,5 +1,5 @@
 use crate::cube::Move;
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 
 const DELIMITER: char = ' ';
 
@@ -22,7 +22,10 @@ mod test {
 
     #[test]
     fn test_valid_single_moves() {
-        for move_str in ["U", "u", "D", "d", "F", "f", "B", "b", "L", "l", "R", "r", "M", "m", "E", "e", "S", "s"] {
+        for move_str in [
+            "U", "u", "D", "d", "F", "f", "B", "b", "L", "l", "R", "r", "M", "m", "E", "e", "S",
+            "s",
+        ] {
             let result = parse(move_str);
             assert!(result.is_ok(), "failed to parse: {move_str}");
         }
@@ -32,7 +35,14 @@ mod test {
     fn test_multiple_moves() {
         let result = parse("U R F");
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), vec![Move::U(Direction::Clockwise), Move::R(Direction::Clockwise), Move::F(Direction::Clockwise)]);
+        assert_eq!(
+            result.unwrap(),
+            vec![
+                Move::U(Direction::Clockwise),
+                Move::R(Direction::Clockwise),
+                Move::F(Direction::Clockwise)
+            ]
+        );
     }
 
     #[test]
@@ -53,7 +63,10 @@ mod test {
             let result = parse(move_str);
             assert!(result.is_err());
             let err = result.unwrap_err().to_string();
-            assert!(err.contains("rotate cube"), "wrong error for {move_str}: {err}");
+            assert!(
+                err.contains("rotate cube"),
+                "wrong error for {move_str}: {err}"
+            );
         }
     }
 
