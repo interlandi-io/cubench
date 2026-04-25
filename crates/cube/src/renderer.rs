@@ -97,7 +97,11 @@ impl Renderer {
         }
     }
 
-    pub fn render_to_buf(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        self.window.snap_image()
+    /// The rendered image will be stale unless you call `Renderer::draw_once` first.
+    pub fn write_once_to_buf(&self) -> Vec<u8> {
+        let n_bytes = (self.window.width() * self.window.height() * 4) as usize;
+        let mut ret = Vec::with_capacity(n_bytes);
+        self.window.snap(&mut ret);
+        ret
     }
 }
