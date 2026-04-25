@@ -44,11 +44,11 @@ impl Renderer {
         let mut root = SceneNode3d::empty();
 
         let mut cube = root.add_group();
-        let light = root 
+        let light = root
             .add_light(Light::point(100.0))
             .set_position(Vec3::new(0.0, 10.0, 0.0));
 
-        let mut cubelets = Vec::with_capacity(26); 
+        let mut cubelets = Vec::with_capacity(26);
         for i in 0..=2 {
             for j in 0..=2 {
                 for k in 0..=2 {
@@ -58,8 +58,7 @@ impl Renderer {
                     let x = (1 - i) as f32 * 1.1;
                     let y = (1 - j) as f32 * 1.1;
                     let z = (1 - k) as f32 * 1.1;
-                    let node = cube.add_cube(1.0, 1.0, 1.0)
-                        .translate(Vec3 { x, y, z });
+                    let node = cube.add_cube(1.0, 1.0, 1.0).translate(Vec3 { x, y, z });
                     cubelets.push(Cubelet {
                         node,
                         texture: Texture::new_default(),
@@ -76,24 +75,21 @@ impl Renderer {
             cubelets,
         };
 
-        Self {
-            window,
-            scene,
-        }
+        Self { window, scene }
     }
 
     pub async fn draw_once(&mut self) {
-        self.window.render_3d(
-            &mut self.scene.root,
-            &mut self.scene.camera
-        ).await;
+        self.window
+            .render_3d(&mut self.scene.root, &mut self.scene.camera)
+            .await;
     }
 
     pub async fn draw_loop(&mut self, mut f: impl FnMut(&mut Scene) -> DrawResult) {
-        while self.window.render_3d(
-            &mut self.scene.root,
-            &mut self.scene.camera
-        ).await {
+        while self
+            .window
+            .render_3d(&mut self.scene.root, &mut self.scene.camera)
+            .await
+        {
             match f(&mut self.scene) {
                 DrawResult::Continue => (),
                 DrawResult::Break => return,
