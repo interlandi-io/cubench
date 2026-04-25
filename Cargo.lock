@@ -507,6 +507,7 @@ dependencies = [
  "image",
  "kiss3d",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]

@@ -12,6 +12,7 @@ console_error_panic_hook = "0.1.7"
 image = "0.25.10"
 kiss3d = "0.41.0"
 wasm-bindgen = "0.2.118"
+wasm-bindgen-futures = "0.4.68"
 
 [[example]]
 name = "renderer"
